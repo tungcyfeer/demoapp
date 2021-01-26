@@ -1,0 +1,82 @@
+<!--
+Copyright 2019 EveryUP srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an  BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="modal" id="modal_new_user" xmlns="http://www.w3.org/1999/html">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span></button>
+                <h4 class="modal-title">New User</h4>
+            </div>
+            <form id="formCreateUser" action='{% url "users:create"   %}'
+                  class="form-horizontal"
+                  method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body" id="modal_new_user_body">
+                    
+                    <div class="form-group">
+                        <label for="username" class="col-sm-3 control-label">Username *</label>
+                        <div class="col-sm-6">
+                            <input class="form-control" id="username" name="username"
+                                   placeholder="Username" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="col-sm-3 control-label">Password *</label>
+                        <div class="col-sm-6">
+                           <input class="form-control" id="password" name="password" type="password"
+                                   placeholder="Password" autocomplete="off" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                            <label for="password" class="col-sm-3 control-label">Conf. Password *</label>
+                            <div class="col-sm-6">
+                               <input class="form-control" id="password2" name="password2" type="password"
+                                       placeholder="Repeat Password" autocomplete="off" required>
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                       <span id="pwmatch" class="glyphicon glyphicon-remove" style="color:#FF0004;"></span> Passwords Match
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+
+                    <div class="form-group" id="domainNameGroupDiv">
+                        <label for="domain_name" class="col-sm-3 control-label">Domain name *</label>
+                        <div class="col-sm-6">
+                            <select id="domain_name" class="js-example-basic form-control" name="domain_name" required>
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary"
+                            data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Creating..."
+                            id="create_new_user">Create
+                    </button>
+
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>

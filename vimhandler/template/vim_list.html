@@ -1,0 +1,94 @@
+<!--
+Copyright 2019 ETSI
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an  BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+{% extends "base.html" %}
+{% load get %}
+{% load staticfiles %}
+
+
+{% block head_block %}
+    {{ block.super }}
+    <link rel="stylesheet" href="/static/node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css">
+{% endblock %}
+{% block title_header_big %}
+    {{ block.super }}
+{% endblock %}
+{% block left_sidebar %}
+
+   {% include 'osm/osm_project_left_sidebar.html' %}
+
+{% endblock %}
+
+
+{% block breadcrumb_body %}
+    {{ block.super }}
+    <li><a href="{% url "vims:list"   %}">VIMS</a></li>
+{% endblock %}
+
+{% block content_body %}
+    {{ block.super }}
+    {% include 'modal/vim_create.html' %}
+    {% include 'modal/vim_details.html' %}
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Registered VIM</h3>
+                    <div class="box-tools">
+                        <button type="button" class="btn btn-default" data-container="body"
+                            data-toggle="tooltip" data-placement="top" title="New VIM"
+                            onclick="javascript:openModalCreateVIM()">
+                        <i class="fa fa-plus"></i> <span> New VIM</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <table id="vims_table" class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Identifier</th>
+                            <th>Type</th>
+                            <th>Operational State</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block resource_block %}
+    {{ block.super }}
+    <script src="/static/node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="/static/node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+    <script src="/static/src/vimhandler/vim_list.js"></script>
+    <script>
+    var table;
+
+        
+    </script>
+
+{% endblock %}

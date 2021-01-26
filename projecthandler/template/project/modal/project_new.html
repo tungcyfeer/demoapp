@@ -1,0 +1,55 @@
+<!--
+Copyright 2019 EveryUP srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an  BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="modal" id="modal_new_project" xmlns="http://www.w3.org/1999/html">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span></button>
+                <h4 class="modal-title" id="modal_new_project_title">New Project</h4>
+            </div>
+            <form id="formNewProject" action='{% url "projects:new_project" %}'class="form-horizontal" method="post" >
+                     {% csrf_token %}
+            <div class="modal-body">
+
+                <div class="form-group" id="div_chose_id" >
+                    <label for="name" class="col-sm-3 control-label">Project Name* </label>
+                    <input name="name" id="name"  size="40" maxlength="20"required/>
+                </div>
+
+                <div class="form-group" id="domainNameGroupDiv">
+                    <label for="domain_name" class="col-sm-3 control-label">Domain Name* </label>
+                    <div class="col-sm-6">
+                        <select id="domain_name" class="js-example-basic form-control" name="domain_name" required>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary"
+                            data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Creating..."
+                            id="create_new_project">Create
+                    </button>
+            </div>
+                </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>

@@ -1,0 +1,326 @@
+<!--
+Copyright 2019 EveryUP srl
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an  BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+{% extends "base.html" %}
+{% load get %}
+{% load date_tag %}
+{% load staticfiles %}
+
+{% block head_block %}
+      {{ block.super }}
+        <link rel="stylesheet" href="/static/node_modules/select2/dist/css/select2.min.css">
+        <link rel="stylesheet" href="/static/node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css">
+
+{% endblock %}
+{% block title_header_big %}
+    {{ block.super }}
+{% endblock %}
+{% block left_sidebar %}
+
+{% include 'osm/osm_project_left_sidebar.html' %}
+
+{% endblock %}
+
+
+{% block breadcrumb_body %}
+  	{{ block.super }}
+      {% if user.is_admin %}
+      <li><a href="{% url 'projects:projects_list' %}">Projects</a></li>
+      {% else%}
+      <li><a href="#">Projects</a></li>
+      {% endif %}
+{% endblock %}
+
+{% block content_body %}
+  	{{ block.super }}
+ {% csrf_token %}
+<div class="row">
+<div class="col-md-12">
+    <div class="box">
+        <div class="box-header with-border">
+                  <h3 class="box-title">Projects</h3>
+            <div class="box-tools">
+                <button type="button" class="btn btn-default" data-container="body"
+                                        data-toggle="tooltip" data-placement="top" title="New Project"
+                                        onclick="javascript:showModalNewProject({'domains_list_url': '{% url "projects:domains_list" %}'})">
+                                    <i class="fa fa-plus"></i> New Project</button>
+            </div>
+        </div>
+        <div class="box-body">
+			<table id="projects_table" class="table table-bordered table-striped">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Modification Date</th>
+						<th>Creation Date</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+
+				</tbody>
+			</table>
+		</div>
+    </div>
+</div>
+
+</div>
+{% include "modal/project_new.html" %}
+{% include "modal/project_edit.html" %}
+{% endblock %}
+
+{% block resource_block %}
+  	{{ block.super }}
+    <script src="/static/node_modules/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="/static/node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+    <script src="/static/node_modules/select2/dist/js/select2.js"></script>
+
+    <script>
+        var table;
+    $(document).ready( function () {
+        table = $('#projects_table').DataTable({
+            responsive: true,
+            "ajax": {
+                "url": "/projects/list",
+                "dataSrc": function (json) {
+                    return json['projects'];
+                },
+                statusCode: {
+                    401: function () {
+                        console.log("no auth");
+                        moveToLogin(window.location.pathname);
+                    }
+                },
+                "error": function (hxr, error, thrown) {
+                    console.log(hxr)
+                    console.log(thrown)
+                    console.log(error);
+                }
+
+            },
+            "columns": [
+                {
+                    "render": function (data, type, row) {
+                       return '<a href="/projects/'+row['name']+'/switch/" >'+row['name']+'</a>'
+                    },
+                    "targets": 0
+                },
+                {
+                    "render": function (data, type, row) {
+                        return moment.unix(row["_admin"]['modified']).format('YYYY-MM-DD hh:mm:ss a');
+                    },
+                    "targets": 1
+                },
+                {
+                    "render": function (data, type, row) {
+                        return moment.unix(row["_admin"]['created']).format('YYYY-MM-DD hh:mm:ss a');
+                    },
+                    "targets": 2
+                },
+                {
+                    "render": function (data, type, row) {
+                        return '<div class="btn-group">\n' +
+                            ' <button type="button" class="btn btn-default dropdown-toggle"\n' +
+                            '         data-toggle="dropdown" aria-expanded="false">Actions\n' +
+                            '     <span class="fa fa-caret-down"></span></button>\n' +
+                            ' <ul class="dropdown-menu">\n' +
+                            '     <li><a href="#"\n' +
+                            '            onclick="javascript:editProject(\''+ row['name']+'\')">\n' +
+                            '         <i class="fa fa-edit"></i> Rename</a></li>\n' +
+                            '     <li>\n' +
+                            '         <a href="#" onclick="javascript:deleteProject(\''+ row['name']+'\')" style="color:red">\n' +
+                            '             <i class="fa fa-trash"  ></i> Delete</a>\n' +
+                            '     </li>\n' +
+                            ' </ul>\n' +
+                            ' </div>';
+                    },
+                    "targets": 3,
+                    "orderable": false
+                }
+            ]
+        });
+
+        setInterval(function () {
+                table.ajax.reload();
+            }, 10000);
+    });
+    </script>
+    <script>
+    function showModalNewProject(args){
+        var dialog = bootbox.dialog({
+            message: '<div class="text-center"><i class="fa fa-spin fa-spinner"></i> Loading...</div>',
+            closeButton: false
+        });
+        $.ajax({
+            url: args.domains_list_url,
+            dataType: "json",
+            contentType: "application/json;charset=utf-8",
+            success: function (result_domain) {
+                domains_list = [];
+                $('#domain_name').prop('disabled', false).trigger('change');
+                if (result_domain['domains']) {
+                    for (d in result_domain['domains']) {
+                        var domain = result_domain['domains'][d];
+                        if (domain.endsWith(':ro') === false) {
+                            domains_list.push({ id: domain, text: domain })
+                        }
+
+                    }
+                }
+                if (domains_list.length == 0) {
+                    $('#domainNameGroupDiv').remove();
+                }
+                dialog.modal('hide');
+               
+                select2_groups = $('#domain_name').select2({
+                    placeholder: 'Select Domain',
+                    width: '100%',
+                    "language": {
+                        "noResults": function () {
+                            return "No domains in the platform";
+                        }
+                    },
+                    data: domains_list
+                });
+
+                $('#modal_new_project').modal('show');
+
+            },
+            error: function (result) {
+                dialog.modal('hide');
+                bootbox.alert("An error occurred.");
+            }
+        });
+    }
+
+    function editProject(project_id){
+        var url = "/projects/" + project_id+"/edit";
+        $("#formEditProject").attr("action", url);
+        $('#modal_edit_project').modal('show');
+    }
+
+    function deleteProject(project_id) {
+        var url = "/projects/" + project_id+"/delete";
+        bootbox.confirm("Are you sure want to delete?", function (result) {
+            if (result) {
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    headers: {
+                        "Accept": 'application/json'
+                    },
+                    contentType: false,
+                    processData: false
+                }).done(function (response,textStatus, jqXHR) {
+                    bootbox.alert({
+                        title: "Result",
+                        message: "Project deleted.",
+                        callback: function () {
+                            table.ajax.reload();
+                        }
+                    });
+                }).fail(function(result){
+                    var data  = result.responseJSON;
+                    var title = "Error " + (data.code ? data.code: 'unknown');
+                    var message = data.detail ? data.detail: 'No detail available.';
+                    bootbox.alert({
+                        title: title,
+                        message: message
+                    });
+                });
+            }
+        })
+    }
+
+    $(document).ready(function () {
+        $("#formNewProject").submit(function (event) {
+            event.preventDefault(); //prevent default action
+            var post_url = $(this).attr("action"); //get form action url
+            var request_method = $(this).attr("method"); //get form GET/POST method
+            var form_data = new FormData(this); //Encode form elements for submission
+            console.log(post_url);
+            $.ajax({
+                url: post_url,
+                type: request_method,
+                data: form_data,
+                headers: {
+                    "Accept": 'application/json'
+                },
+                contentType: false,
+                processData: false
+            }).done(function (response,textStatus, jqXHR) {
+                bootbox.alert({
+                        title: "Result",
+                        message: "Project created.",
+                    callback: function () {
+                        table.ajax.reload();
+                        $('#modal_new_project').modal('hide');
+                    }
+                    });
+            }).fail(function(result){
+                var data  = result.responseJSON;
+                var title = "Error " + (data.code ? data.code: 'unknown');
+                    var message = data.detail ? data.detail: 'No detail available.';
+                    bootbox.alert({
+                        title: title,
+                        message: message
+                    });
+            });
+        });
+    
+        $("#formEditProject").submit(function(event){
+            event.preventDefault(); //prevent default action
+            var post_url = $(this).attr("action"); //get form action url
+            var request_method = $(this).attr("method"); //get form GET/POST method
+            var form_data = new FormData(this); //Encode form elements for submission
+            console.log(post_url);
+            $.ajax({
+                url: post_url,
+                type: request_method,
+                data: form_data,
+                headers: {
+                    "Accept": 'application/json'
+                },
+                contentType: false,
+                processData: false
+            }).done(function (response,textStatus, jqXHR) {
+                bootbox.alert({
+                        title: "Result",
+                        message: "Project updated.",
+                    callback: function () {
+                        table.ajax.reload();
+                        $('#modal_edit_project').modal('hide');
+                    }
+                    });
+            }).fail(function(result){
+                var data  = result.responseJSON;
+                var title = "Error " + (data.code ? data.code: 'unknown');
+                    var message = data.detail ? data.detail: 'No detail available.';
+                    bootbox.alert({
+                        title: title,
+                        message: message
+                    });
+            });
+        });
+    });
+
+
+
+
+    </script>
+
+
+{% endblock %}
